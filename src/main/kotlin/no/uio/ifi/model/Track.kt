@@ -14,12 +14,8 @@ data class Track(
     var fileFormat: FileFormat?,
     @SerializedName("file_iri")
     var fileIri: String?,
-    @SerializedName("file_name")
-    var fileName: String?,
     @SerializedName("genome_assembly")
     var genomeAssembly: String?,
-    @SerializedName("global_id")
-    var globalId: String?,
     @SerializedName("label_long")
     var labelLong: String?,
     @SerializedName("label_short")

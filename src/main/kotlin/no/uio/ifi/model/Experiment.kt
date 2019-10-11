@@ -4,8 +4,6 @@ package no.uio.ifi.model
 import com.google.gson.annotations.SerializedName
 
 data class Experiment(
-    @SerializedName("aggregated_from")
-    var aggregatedFrom: List<Any?>?,
     @SerializedName("compute_protocol_description")
     var computeProtocolDescription: String?,
     @SerializedName("global_id")
@@ -21,5 +19,5 @@ data class Experiment(
     @SerializedName("target")
     var target: Target?,
     @SerializedName("technique")
-    var techType: TechType?
+    var technique: Technique?
 )

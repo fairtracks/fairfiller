@@ -39,13 +39,13 @@ fun main() {
     print("Processing experiments... ")
 
     for (experiment in blueprint?.experiments.orEmpty()) {
-        val techType = experiment?.techType
-        val termIri = techType?.termIri
-        val termValue = techType?.termValue
+        val technique = experiment?.technique
+        val termIri = technique?.termIri
+        val termValue = technique?.termValue
         if (termValue == null && termIri != null) {
             val value = ONTOLOGIES[termIri]
             if (value != null) {
-                techType.termValue = value
+                technique.termValue = value
             }
         }
     }

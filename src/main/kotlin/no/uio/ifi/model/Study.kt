@@ -11,9 +11,5 @@ data class Study(
     @SerializedName("local_id")
     var localId: String?,
     @SerializedName("phenotype")
-    var phenotype: Phenotype?,
-    @SerializedName("publications")
-    var publications: List<String?>?,
-    @SerializedName("study_name")
-    var studyName: String?
+    var phenotype: Phenotype?
 )

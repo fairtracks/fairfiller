@@ -1,9 +1,9 @@
-package no.uio.ifi.model
+package no.uio.ifi.fairfiller.model
 
 
 import com.google.gson.annotations.SerializedName
 
-data class SampleType(
+data class Target(
     @SerializedName("term_iri")
     var termIri: String?,
     @SerializedName("term_value")

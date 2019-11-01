@@ -4,33 +4,29 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.LoadingCache
 import org.jsoup.Jsoup.connect
 import org.jsoup.select.Selector.select
+import org.slf4j.LoggerFactory
 import java.net.URL
 
 class FairFiller {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     private val ONTOLOGIES: LoadingCache<String, String> =
         Caffeine.newBuilder().maximumSize(Long.MAX_VALUE).build { key -> getOntologyValue(key) }
 
     fun fill(map: MutableMap<String, Any>) {
-//        if (map.containsKey("file_name") && map.containsKey("checksum")) { //track
-//            if (!map.containsKey("genome_assembly")) {
-//                map["genome_assembly"] = "GRCh38"
-//            }
-//            if (!map.containsKey("content_type")) {
-//                map["content_type"] = mapOf(
-//                    "term_url" to "http://edamontology.org/data_3002",
-//                    "term_value" to "Annotation track"
-//                )
-//            }
-//        }
-
-        if (map.containsKey("term_url") && !map.containsKey("term_value")) {
-            val termURL = map["term_url"]
+        if ((map.containsKey("term_url") || map.containsKey("term_iri")) && !map.containsKey("term_value")) {
+            val termURL = if (map.containsKey("term_url")) map["term_url"] else map["term_iri"]
             val termValue = ONTOLOGIES[termURL.toString()]
             if (termValue != null) {
                 map["term_value"] = termValue
             }
-            return
+        }
+
+        if ((map.containsKey("file_url") || map.containsKey("file_iri")) && !map.containsKey("file_name")) {
+            val fileURL = if (map.containsKey("file_url")) map["file_url"] else map["file_iri"]
+            val fileName = fileURL.toString().substringAfterLast("/")
+            map["file_name"] = fileName
         }
 
         for ((_, value) in map) {
@@ -46,30 +42,35 @@ class FairFiller {
         }
     }
 
-    fun getOntologyValue(termIri: String): String? {
-        return when {
-            termIri.contains("obolibrary") -> getObolibraryValue(termIri)
-            termIri.contains("www.ebi.ac.uk") -> getEBIValue(termIri)
-            termIri.contains("edamontology") -> getEDAMValue(termIri)
-            else -> throw RuntimeException(termIri)
+    fun getOntologyValue(termURL: String): String? {
+        return try {
+            when {
+                termURL.contains("obolibrary") -> getObolibraryValue(termURL)
+                termURL.contains("www.ebi.ac.uk") -> getEBIValue(termURL)
+                termURL.contains("edamontology") -> getEDAMValue(termURL)
+                else -> throw RuntimeException(termURL)
+            }
+        } catch (e: Exception) {
+            log.error(e.message + ": " + termURL)
+            null
         }
     }
 
-    fun getObolibraryValue(termIri: String): String? {
-        return URL(termIri).readText()
-            .substringAfter("<Class rdf:about=\"$termIri\">")
+    fun getObolibraryValue(termURL: String): String? {
+        return URL(termURL).readText()
+            .substringAfter("<Class rdf:about=\"$termURL\">")
             .substringAfter(">")
             .substringBefore("</rdfs:label>")
     }
 
-    fun getEBIValue(termIri: String): String? {
-        return connect(termIri).run {
+    fun getEBIValue(termURL: String): String? {
+        return connect(termURL).run {
             get().title()
         }
     }
 
-    fun getEDAMValue(termIri: String): String? {
-        return connect(termIri).run {
+    fun getEDAMValue(termURL: String): String? {
+        return connect(termURL).run {
             select("span.prefLabel", get()).text()
         }
     }
